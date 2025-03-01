@@ -1,0 +1,16 @@
+setup.py
+densely_captioned_images/dataset/__init__.py
+densely_captioned_images/dataset/config.py
+densely_captioned_images/dataset/dense_image.py
+densely_captioned_images/dataset/impl.py
+densely_captioned_images/dataset/loss.py
+densely_captioned_images/dataset/spacy_negs.py
+densely_captioned_images/dataset/utils.py
+densely_captioned_images/dataset/scripts/__init__.py
+densely_captioned_images/dataset/scripts/download.py
+densely_captioned_images/dataset/scripts/run_clip_dense_cap_eval.py
+densely_captioned_images_dataset.egg-info/PKG-INFO
+densely_captioned_images_dataset.egg-info/SOURCES.txt
+densely_captioned_images_dataset.egg-info/dependency_links.txt
+densely_captioned_images_dataset.egg-info/requires.txt
+densely_captioned_images_dataset.egg-info/top_level.txt

@@ -1,0 +1,25 @@
+Metadata-Version: 2.2
+Name: densely_captioned_images-dataset
+Version: 0.1
+Summary: Research project for densely annotated mask-aligned images
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: CC-BY-NC License
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Natural Language :: English
+Requires-Python: >=3.8
+Requires-Dist: en-core-web-sm@ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.6.0/en_core_web_sm-3.6.0-py3-none-any.whl
+Requires-Dist: nltk==3.8.1
+Requires-Dist: numpy==1.24.2
+Requires-Dist: peft==0.4.0
+Requires-Dist: Pillow==10.2.0
+Requires-Dist: spacy==3.6.1
+Requires-Dist: spacy-legacy==3.0.12
+Requires-Dist: spacy-loggers==1.0.4
+Requires-Dist: transformers>=4.31.0
+Requires-Dist: tqdm>=4.65.0
+Requires-Dist: torch>=2.0.0
+Requires-Dist: torchvision>=0.15.1
+Dynamic: classifier
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
