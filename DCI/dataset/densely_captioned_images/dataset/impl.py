@@ -52,13 +52,21 @@ def get_complete_dataset_with_settings(
         load_base_image: bool = True,
         load_subcaptions: bool = True,
         count: Optional[int] = None,
+        start_index: Optional[int] = None,
+        end_index: Optional[int] = None,
 ) -> List[List[DCIEntry]]:
     assert split in ['train', 'valid', 'test'], f"Bad split {split}"
 
     with open(os.path.join(DATASET_BASE, 'splits.json')) as jsonf:
         split_metadata = json.load(jsonf)
         sources = split_metadata[split]
-
+    if start_index is None:
+        start_index = 0
+    if end_index is None:
+        end_index = len(sources)
+    if start_index > end_index:
+        raise ValueError("start_index must be less than end_index")
+    sources = sources[start_index:end_index]
     entries_per_image = []
     for source_path in tqdm(sources, desc="Loading Dense Caps:"):
         if count is not None and len(entries_per_image) > count:
