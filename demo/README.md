@@ -47,23 +47,3 @@ This will start a local web server and open the demo in your default web browser
 3. The index is searched to find documents containing those k-grams
 4. Results are ranked using TF-IDF scoring
 5. The top-k results are displayed with their captions and scores
-
-## Troubleshooting
-
-### PyTorch-related Errors
-
-If you encounter errors related to PyTorch's custom classes when running the demo, the application has been configured to disable PyTorch's custom class path examination by setting the following environment variables:
-
-```python
-os.environ["PYTORCH_JIT"] = "0"
-os.environ["TORCH_DISABLE_CUSTOM_CLASS_LOOKUP"] = "1"
-```
-
-These settings prevent conflicts between PyTorch's custom class system and Streamlit's module path examination.
-
-### Dataset Loading Issues
-
-If you encounter issues loading the dataset or index, make sure:
-1. The KGram index has been built and is available in `kgram_index/data`
-2. You have the necessary permissions to read the files
-3. The dataset is accessible from the demo directory 
