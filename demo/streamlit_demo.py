@@ -112,6 +112,9 @@ def main():
     
     top_k = st.sidebar.slider("Number of results to show", 1, 20, 5)
     
+    # Add checkbox for wildcard search
+    use_wildcards = st.sidebar.checkbox("Enable wildcard search (use * in queries)", value=False)
+    
     # Load the selected index
     with st.spinner(f"Loading index {selected_index}..."):
         index = load_kgram_index(selected_index)
@@ -128,7 +131,7 @@ def main():
     if query:
         with st.spinner("Searching..."):
             # Get the top-k results
-            results = index.compute_tf_idf_query(query, top_k=top_k)
+            results = index.compute_tf_idf_query(query, top_k=top_k, use_wildcards=use_wildcards)
             
             if not results:
                 st.warning("No results found. Try a different query.")

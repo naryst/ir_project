@@ -12,7 +12,7 @@ This is a Streamlit demo application that showcases the KGram index search funct
 
 1. Install the required packages:
 ```bash
-pip install streamlit pandas pillow
+pip install -r requirements.txt
 ```
 
 2. Make sure you have built the KGram index. If not, run:
