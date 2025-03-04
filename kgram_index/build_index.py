@@ -64,11 +64,22 @@ class KGramIndex:
         )  # Smoothed IDF
         return tf * idf
 
-    def compute_tf_idf_query(self, query, top_k=10):
-        """Compute TF-IDF scores for a query."""
+    def compute_tf_idf_query(self, query, top_k=10, use_wildcards=False):
+        """
+        Compute TF-IDF scores for a query.
+        Args:
+            query: The search query
+            top_k: Number of top results to return
+            use_wildcards: Whether to support wildcard searches with *
+        """
 
         if top_k < 1:
             top_k = COMPLETE_DATASET_SIZE
+            
+        # Handle wildcard queries
+        if use_wildcards and '*' in query:
+            return self._wildcard_search(query, top_k)
+            
         words = re.findall(r"\w+", query.lower())
         query_kgrams = set()
 
@@ -85,6 +96,62 @@ class KGramIndex:
         return sorted(tf_idf_scores.items(), key=lambda x: x[1], reverse=True)[
             :top_k
         ]  # Rank results
+        
+    def _wildcard_search(self, query, top_k=10):
+        # Split the query by wildcards
+        parts = query.lower().split('*')
+        parts = [p for p in parts if p]  # Remove empty parts
+        
+        if not parts:
+            return []  # Query is just wildcards
+            
+        # Get candidate documents for each non-wildcard part
+        candidate_docs = set()
+        first_part = True
+        
+        for part in parts:
+            part_kgrams = set()
+            words = re.findall(r"\w+", part)
+            
+            for word in words:
+                part_kgrams.update(self.generate_kgrams(word))
+                
+            # Find documents containing all k-grams for this part
+            part_docs = set()
+            for kgram in part_kgrams:
+                if kgram in self.kgram_index:
+                    if not part_docs:
+                        part_docs = set(self.kgram_index[kgram])
+                    else:
+                        part_docs &= self.kgram_index[kgram]
+            
+            # For the first part, initialize candidate_docs
+            if first_part:
+                candidate_docs = part_docs
+                first_part = False
+            else:
+                # For subsequent parts, keep only docs that contain all parts
+                candidate_docs &= part_docs
+                
+            if not candidate_docs:
+                return []
+        
+        # Calculate scores for candidate documents
+        tf_idf_scores = defaultdict(float)
+        
+        # Get all k-grams from the query parts
+        all_query_kgrams = set()
+        for part in parts:
+            words = re.findall(r"\w+", part)
+            for word in words:
+                all_query_kgrams.update(self.generate_kgrams(word))
+        
+        # Compute scores
+        for doc_id in candidate_docs:
+            for kgram in all_query_kgrams:
+                tf_idf_scores[doc_id] += self.compute_tf_idf(kgram, doc_id)
+        
+        return sorted(tf_idf_scores.items(), key=lambda x: x[1], reverse=True)[:top_k]
 
     def save(self, filename=None):
         """
