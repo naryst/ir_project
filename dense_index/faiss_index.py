@@ -27,6 +27,9 @@ total_images = 0
 
 for file_path in tqdm(image_files, desc="Loading image embeddings"):
     tensor = torch.load(file_path)
+    # Convert bfloat16 to float32
+    if tensor.dtype == torch.bfloat16:
+        tensor = tensor.to(torch.float32)
     vectors = tensor.cpu().numpy().astype('float32')
     image_vectors.append(vectors)
     total_images += vectors.shape[0]
@@ -44,6 +47,9 @@ total_queries = 0
 
 for file_path in tqdm(query_files, desc="Loading query embeddings"):
     tensor = torch.load(file_path)
+    # Convert bfloat16 to float32
+    if tensor.dtype == torch.bfloat16:
+        tensor = tensor.to(torch.float32)
     vectors = tensor.cpu().numpy().astype('float32')
     query_vectors.append(vectors)
     total_queries += vectors.shape[0]

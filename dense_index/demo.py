@@ -123,8 +123,12 @@ def search_faiss(query_embedding, index, top_k=5):
 
 def search_ball_tree(query_embedding, index, top_k=5):
     """Search using Ball Tree index."""
-    distances, indices = index.query(query_embedding, k=top_k)
-    return indices, distances
+    indices, distances = index.query(query_embedding, k=top_k)
+    if distances.ndim == 1:
+        distances = distances.reshape(1, -1)
+    if indices.ndim == 1:
+        indices = indices.reshape(1, -1)
+    return indices[0], distances[0]
 
 def main():
     st.title("🔍 Vector Search Demo")
@@ -205,11 +209,6 @@ def main():
                 indices, distances = search_faiss(query_embedding, index_data['index'], top_k)
             else:
                 indices, distances = search_ball_tree(query_embedding, index_data['index'], top_k)
-            
-            # Convert single result to list if needed
-            if not isinstance(indices, np.ndarray):
-                indices = [indices]
-                distances = [distances]
             
             st.subheader(f"Top {len(indices)} Results")
             
