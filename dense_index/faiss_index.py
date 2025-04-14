@@ -23,37 +23,37 @@ print(f"Found {len(image_files)} image embedding files and {len(query_files)} qu
 
 # Process image embeddings
 image_vectors = []
-image_ids = []
+total_images = 0
 
-for i, file_path in enumerate(tqdm(image_files, desc="Loading image embeddings")):
+for file_path in tqdm(image_files, desc="Loading image embeddings"):
     tensor = torch.load(file_path)
     vectors = tensor.cpu().numpy().astype('float32')
-    
-    # Generate sequential IDs for the vectors
-    batch_size = vectors.shape[0]
-    batch_ids = [f"img_{i}_{j}" for j in range(batch_size)]
-    
     image_vectors.append(vectors)
-    image_ids.extend(batch_ids)
+    total_images += vectors.shape[0]
+
+# Stack all image vectors into a single array
+image_vectors_array = np.vstack(image_vectors).astype('float32')
+print(f"Loaded {len(image_vectors_array)} image vectors with shape {image_vectors_array.shape}")
+
+# Generate sequential IDs for all image vectors
+image_ids = [f"img_{i}" for i in range(total_images)]
 
 # Process query embeddings
 query_vectors = []
-query_ids = []
+total_queries = 0
 
-for i, file_path in enumerate(tqdm(query_files, desc="Loading query embeddings")):
+for file_path in tqdm(query_files, desc="Loading query embeddings"):
     tensor = torch.load(file_path)
     vectors = tensor.cpu().numpy().astype('float32')
-    
-    # Generate sequential IDs for the vectors
-    batch_size = vectors.shape[0]
-    batch_ids = [f"qry_{i}_{j}" for j in range(batch_size)]
-    
     query_vectors.append(vectors)
-    query_ids.extend(batch_ids)
+    total_queries += vectors.shape[0]
 
-# Create FAISS index for image embeddings
-image_vectors_array = np.vstack(image_vectors).astype('float32')
-print(f"Loaded {len(image_vectors_array)} image vectors with shape {image_vectors_array.shape}")
+# Stack all query vectors into a single array
+query_vectors_array = np.vstack(query_vectors).astype('float32')
+print(f"Loaded {len(query_vectors_array)} query vectors with shape {query_vectors_array.shape}")
+
+# Generate sequential IDs for all query vectors
+query_ids = [f"qry_{i}" for i in range(total_queries)]
 
 # Normalize image vectors
 image_vectors_array = image_vectors_array / np.linalg.norm(image_vectors_array, axis=1, keepdims=True)
@@ -62,10 +62,6 @@ image_vectors_array = image_vectors_array.astype("float32")
 print("Image vectors dtype:", image_vectors_array.dtype)
 print("Image vectors - Contains NaN:", np.isnan(image_vectors_array).any())
 print("Image vectors - Contains inf:", np.isinf(image_vectors_array).any())
-
-# Create FAISS index for query embeddings
-query_vectors_array = np.vstack(query_vectors).astype('float32')
-print(f"Loaded {len(query_vectors_array)} query vectors with shape {query_vectors_array.shape}")
 
 # Normalize query vectors
 query_vectors_array = query_vectors_array / np.linalg.norm(query_vectors_array, axis=1, keepdims=True)
@@ -87,29 +83,15 @@ print("Query embedding dimension:", query_dim)
 
 query_index = faiss.IndexFlatIP(query_dim)
 
-# Add vectors and save indices
-if faiss.get_num_gpus() > 0:
-    print("FAISS working with GPU")
-    
-    # Process image index
-    gpu_image_index = faiss.index_cpu_to_all_gpus(image_index)
-    gpu_image_index.add(image_vectors_array)
-    faiss.write_index(faiss.index_gpu_to_cpu(gpu_image_index), os.path.join(output_folder, "image_faiss_index.bin"))
-    
-    # Process query index
-    gpu_query_index = faiss.index_cpu_to_all_gpus(query_index)
-    gpu_query_index.add(query_vectors_array)
-    faiss.write_index(faiss.index_gpu_to_cpu(gpu_query_index), os.path.join(output_folder, "query_faiss_index.bin"))
-else:
-    print("FAISS working with CPU")
-    
-    # Process image index
-    image_index.add(image_vectors_array)
-    faiss.write_index(image_index, os.path.join(output_folder, "image_faiss_index.bin"))
-    
-    # Process query index
-    query_index.add(query_vectors_array)
-    faiss.write_index(query_index, os.path.join(output_folder, "query_faiss_index.bin"))
+print("FAISS working with CPU")
+
+# Process image index
+image_index.add(image_vectors_array)
+faiss.write_index(image_index, os.path.join(output_folder, "image_faiss_index.bin"))
+
+# Process query index
+query_index.add(query_vectors_array)
+faiss.write_index(query_index, os.path.join(output_folder, "query_faiss_index.bin"))
 
 # Save the ID lists
 with open(os.path.join(output_folder, "image_id_list.pkl"), "wb") as f:
