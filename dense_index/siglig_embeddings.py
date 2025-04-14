@@ -14,7 +14,7 @@ print("Используемое устройство:", device)
 torch.backends.cudnn.benchmark = True
 
 clip_model_name = "openai/clip-vit-base-patch32"
-processor = CLIPProcessor.from_pretrained(clip_model_name)
+processor = CLIPProcessor.from_pretrained(clip_model_name, use_fast=True)
 model = CLIPModel.from_pretrained(clip_model_name).to(device)
 
 print("Есть метод get_text_features:", hasattr(model, 'get_text_features'))
@@ -155,17 +155,19 @@ def process_all_data_batch(data_items, batch_size=4):
     return embeddings
 
 
-# Запуск
-data_items = load_data(annotations_path, photos_path)
 
-embeddings = process_all_data_batch(data_items, batch_size=8)
+if __name__ == "__main__":
+    # Запуск
+    data_items = load_data(annotations_path, photos_path)
 
-# Сохранение
-import pickle
-with open("embeddings.pkl", "wb") as f:
-    pickle.dump(embeddings, f)
+    embeddings = process_all_data_batch(data_items, batch_size=8)
 
-print(f"Обработано пар: {len(embeddings) // 2}")
+    # Сохранение
+    import pickle
+    with open("embeddings.pkl", "wb") as f:
+        pickle.dump(embeddings, f)
+
+    print(f"Обработано пар: {len(embeddings) // 2}")
 
 
 def encode_text(text: str) -> np.ndarray:

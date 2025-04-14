@@ -162,7 +162,7 @@ def load_faiss_index(index_path="faiss_ivf_index.bin"):
 
 @st.cache_resource
 def load_balltree_index():
-    """Load embeddings and build VP‑Tree index with caching."""
+    """Load embeddings and build VP-Tree index with caching."""
     try:
         import sys
         import numpy as np
@@ -185,7 +185,7 @@ def load_balltree_index():
         tree = VPTree(image_vectors)
         return tree, image_vectors, image_ids
     except Exception as e:
-        st.error(f"Error loading VP‑Tree index: {str(e)}")
+        st.error(f"Error loading VP-Tree index: {str(e)}")
         return None, None, None
 
 
