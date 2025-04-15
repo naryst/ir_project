@@ -11,6 +11,7 @@ import faiss
 import numpy as np
 from transformers.utils.import_utils import is_flash_attn_2_available
 from colpali_engine.models import ColQwen2_5, ColQwen2_5_Processor
+from transformers import AutoModel
 import glob
 import pickle
 from densely_captioned_images.dataset.impl import get_complete_dataset_with_settings
@@ -24,6 +25,8 @@ st.set_page_config(
 
 COMPLETE_DATASET_SIZE = 7599
 SPLIT = "train"
+
+MODE = "jina"
 
 @st.cache_data
 def load_dataset(start_index=0, end_index=COMPLETE_DATASET_SIZE):
@@ -49,8 +52,16 @@ def get_documents_by_ids(doc_ids):
 
 # Initialize model and processor
 @st.cache_resource
-def load_model():
-    try:
+def load_model(mode="jina"):
+    if mode == "jina":
+        model = AutoModel.from_pretrained(
+            'jinaai/jina-clip-v2', 
+            trust_remote_code=True,
+            device_map="cpu",
+            attn_implementation="flash_attention_2" if is_flash_attn_2_available() else None,
+        ).eval()
+        return model, None
+    else:
         model_name = "nomic-ai/colnomic-embed-multimodal-7b"
         model = ColQwen2_5.from_pretrained(
             model_name,
@@ -60,13 +71,15 @@ def load_model():
         ).eval()
         processor = ColQwen2_5_Processor.from_pretrained(model_name, use_fast=True)
         return model, processor
-    except Exception as e:
-        st.error(f"Error loading model: {str(e)}")
-        return None, None
 
-def get_available_indices():
+def get_available_indices(mode="jina"):
     """Get a list of available index files in the results directory."""
     base_dir = os.path.dirname(os.path.abspath(__file__))
+    if mode == "jina":
+        base_dir = os.path.join(base_dir, "jina_index")
+    else:
+        base_dir = os.path.join(base_dir, "colqwen_index")
+
     faiss_dir = os.path.join(base_dir, "faiss_index")
     ball_tree_dir = os.path.join(base_dir, "ball_tree_index")
     
@@ -134,13 +147,10 @@ def main():
     st.title("🔍 Vector Search Demo")
     
     # Load model and processor
-    model, processor = load_model()
-    if model is None or processor is None:
-        st.error("Failed to load model. Please check the error message above.")
-        st.stop()
+    model, processor = load_model(MODE)
     
     # Get available indices
-    available_indices = get_available_indices()
+    available_indices = get_available_indices(MODE)
     
     # Sidebar for configuration
     st.sidebar.header("Configuration")
@@ -195,12 +205,15 @@ def main():
     
     if query:
         with st.spinner("Processing query..."):
-            # Process query
-            query_input = processor.process_queries([query])
-            with torch.no_grad():
-                query_embedding = model(**query_input)
-            # Convert BFloat16 to float32 before converting to numpy
-            query_embedding = query_embedding.mean(dim=1).to(torch.float32).cpu().numpy()
+            if MODE == "colqwen":
+                # Process query
+                query_input = processor.process_queries([query])
+                with torch.no_grad():
+                    query_embedding = model(**query_input)
+                # Convert BFloat16 to float32 before converting to numpy
+                query_embedding = query_embedding.mean(dim=1).to(torch.float32).cpu().numpy()
+            elif MODE == "jina":
+                query_embedding = model.encode_text([query], task='retrieval.query')
             # normalize the query embedding
             query_embedding = query_embedding / np.linalg.norm(query_embedding)
             
