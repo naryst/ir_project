@@ -21,13 +21,11 @@ class BallTree:
             self.indices = indices  # Only for leaf nodes
             
     def build(self, data: np.ndarray) -> None:
-        """Build the ball tree from the given data."""
         self.dim = data.shape[1]
         self.data = data  # Store the data
         self.root = self._build_tree(data, np.arange(len(data)))
         
     def _build_tree(self, data: np.ndarray, indices: np.ndarray) -> Node:
-        """Recursively build the ball tree."""
         if len(indices) <= self.leaf_size:
             # Create leaf node
             center = np.mean(data[indices], axis=0)
@@ -57,7 +55,6 @@ class BallTree:
         return self.Node(center, radius, left_node, right_node)
     
     def query(self, query: np.ndarray, k: int = 1) -> Tuple[np.ndarray, np.ndarray]:
-        """Find k nearest neighbors for the query point."""
         if self.root is None:
             raise ValueError("Tree has not been built yet")
             
@@ -104,7 +101,6 @@ class BallTree:
         return np.array(best_indices), np.array(best_distances)
     
     def batch_query(self, queries: np.ndarray, k: int = 1) -> Tuple[np.ndarray, np.ndarray]:
-        """Find k nearest neighbors for multiple query points."""
         all_indices = []
         all_distances = []
         
@@ -116,12 +112,10 @@ class BallTree:
         return np.array(all_indices), np.array(all_distances)
     
     def save(self, path: str) -> None:
-        """Save the ball tree to disk."""
         with open(path, 'wb') as f:
             pickle.dump(self, f)
             
     @classmethod
     def load(cls, path: str) -> 'BallTree':
-        """Load a ball tree from disk."""
         with open(path, 'rb') as f:
             return pickle.load(f)
