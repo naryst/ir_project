@@ -1,4 +1,4 @@
-Metadata-Version: 2.2
+Metadata-Version: 2.4
 Name: densely_captioned_images-dataset
 Version: 0.1
 Summary: Research project for densely annotated mask-aligned images
@@ -9,7 +9,7 @@ Classifier: Natural Language :: English
 Requires-Python: >=3.8
 Requires-Dist: en-core-web-sm@ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.6.0/en_core_web_sm-3.6.0-py3-none-any.whl
 Requires-Dist: nltk==3.8.1
-Requires-Dist: numpy==1.24.2
+Requires-Dist: numpy==1.26.1
 Requires-Dist: peft>=0.4.0
 Requires-Dist: Pillow==10.2.0
 Requires-Dist: spacy==3.6.1

@@ -39,5 +39,3 @@ cd demo
 pip install -r requirements.txt
 streamlit run 
 ```
-
-123 test
