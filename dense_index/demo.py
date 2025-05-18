@@ -26,8 +26,8 @@ st.set_page_config(
 COMPLETE_DATASET_SIZE = 7599
 SPLIT = "train"
 
-# MODE = "jina"
-MODE = "colqwen"
+MODE = "jina"
+# MODE = "colqwen"
 
 @st.cache_data
 def load_dataset(start_index=0, end_index=COMPLETE_DATASET_SIZE):

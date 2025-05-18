@@ -82,4 +82,3 @@ This project explores different approaches to multimodal search and compares the
 3. Segmentation-based search for more localized results
 
 The implementation demonstrates how these approaches can be combined to create a comprehensive search engine for images and text.
-$$

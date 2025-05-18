@@ -14,7 +14,6 @@ from colpali_engine.models import ColQwen2_5, ColQwen2_5_Processor
 from transformers import AutoModel
 import glob
 import pickle
-from densely_captioned_images.dataset.impl import get_complete_dataset_with_settings
 from densely_captioned_images.dataset.dense_image import DenseCaptionedImage
 
 # Set page configuration
@@ -24,18 +23,9 @@ st.set_page_config(
     layout="wide"
 )
 
-COMPLETE_DATASET_SIZE = 7599
-SPLIT = "train"
-
 MODE = "jina"
 # MODE = "colqwen"
 
-@st.cache_data
-def load_dataset(start_index=0, end_index=COMPLETE_DATASET_SIZE):
-    print(f"Loading dataset from {start_index} to {end_index}")
-    return get_complete_dataset_with_settings(
-        split=SPLIT, start_index=start_index, end_index=end_index
-    )
 
 @st.cache_data
 def get_documents_by_ids(doc_ids):
@@ -44,6 +34,10 @@ def get_documents_by_ids(doc_ids):
     for doc_id in doc_ids:
         documents[doc_id] = DenseCaptionedImage(img_id=doc_id)
     return documents
+
+def refine_prompt(query):
+    from ollama_request import refine_query_for_clip
+    return refine_query_for_clip(query)
 
 # Initialize model and processor
 @st.cache_resource
@@ -197,17 +191,29 @@ def main():
         label_visibility="visible"
     )
     
+    # Add button right after query input
+    refine_button = st.button("Run with refined prompt", help="Use AI to optimize your query for better results")
+    
     if query:
+        # Process query
+        processed_query = query
+        
+        # Check if refinement button was clicked
+        if refine_button:
+            with st.spinner("Refining query..."):
+                processed_query = refine_prompt(query)
+                st.info(f"Original query: '{query}'\nRefined query: '{processed_query}'")
+        
         with st.spinner("Processing query..."):
             if MODE == "colqwen":
                 # Process query
-                query_input = processor.process_queries([query])
+                query_input = processor.process_queries([processed_query])
                 with torch.no_grad():
                     query_embedding = model(**query_input)
                 # Convert BFloat16 to float32 before converting to numpy
                 query_embedding = query_embedding.mean(dim=1).to(torch.float32).cpu().numpy()
             elif MODE == "jina":
-                query_embedding = model.encode_text([query], task='retrieval.query', truncate_dim=512)
+                query_embedding = model.encode_text([processed_query], task='retrieval.query', truncate_dim=512)
             # normalize the query embedding
             query_embedding = query_embedding / np.linalg.norm(query_embedding)
             
