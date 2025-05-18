@@ -66,12 +66,19 @@ The project uses the DCI (Densely Captioned Images) dataset from Meta, which pro
 ### Setup
 Follow the instructions in `REPRODUCE.md` to set up the environment and download the dataset“
 
+Important remark:
+for prompt refinement you need to have ollama with gemma3:4b installed and running.
+```bash
+ollama serve gemma3:4b
+```
+
 ## Technologies Used
 
 - **FAISS**: For efficient similarity search
 - **PyTorch**: For neural network models
 - **Streamlit**: For interactive demo interfaces
 - **Transformer models**: JINA-CLIP and ColQwen for text/image embeddings
+- **Ollama**: For AI-assisted query refinement
 
 ## Research Contributions
 
