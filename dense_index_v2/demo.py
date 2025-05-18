@@ -15,6 +15,7 @@ from transformers import AutoModel
 import glob
 import pickle
 from densely_captioned_images.dataset.impl import get_complete_dataset_with_settings
+from densely_captioned_images.dataset.dense_image import DenseCaptionedImage
 
 # Set page configuration
 st.set_page_config(
@@ -39,17 +40,10 @@ def load_dataset(start_index=0, end_index=COMPLETE_DATASET_SIZE):
 @st.cache_data
 def get_documents_by_ids(doc_ids):
     """Load only the specific documents by their IDs."""
-    try:
-        documents = {}
-        for doc_id in doc_ids:
-            # Load one document at a time
-            doc_data = load_dataset(doc_id, doc_id + 1)
-            if doc_data and len(doc_data) > 0:
-                documents[doc_id] = doc_data[0]
-        return documents
-    except Exception as e:
-        st.error(f"Error loading documents: {str(e)}")
-        return {}
+    documents = {}
+    for doc_id in doc_ids:
+        documents[doc_id] = DenseCaptionedImage(img_id=doc_id)
+    return documents
 
 # Initialize model and processor
 @st.cache_resource
@@ -248,7 +242,7 @@ def main():
                     doc_id = int(idx)
                     if doc_id in documents:
                         entry = documents[doc_id]
-                        caption = entry[0]["caption"]
+                        caption = entry.get_formatted_complete_description()[0]['caption']
                         
                         # Create a result card
                         with st.container():
@@ -259,8 +253,8 @@ def main():
                             
                             # Display image if available
                             try:
-                                if "image" in entry[0]:
-                                    image = entry[0]["image"]
+                                if entry.get_image() is not None:
+                                    image = entry.get_image()
                                     st.image(image, caption=f"Image for Result {i+1}", use_container_width=True)
                             except Exception as e:
                                 st.error(f"Error displaying image: {e}")
