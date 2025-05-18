@@ -94,6 +94,7 @@ def init_entries(source: str = DATASET_COMPLETE_PATH) -> None:
     """
     global ENTRIES, ENTRIES_MAP, ENTRIES_REVERSE_MAP
     ENTRIES = os.listdir(source)
+    ENTRIES.sort()  # Ensure a consistent, sorted order of entries
     ENTRIES_MAP = {str(i): e for i, e in enumerate(ENTRIES)}
     ENTRIES_REVERSE_MAP = {str(e): i for i, e in enumerate(ENTRIES)}
 

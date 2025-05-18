@@ -4,3 +4,7 @@
 *.pkl
 *.pt
 **__pycache__**
+*.pth
+*.zip
+segmentation_pipeline/masks
+segmentation_pipeline/images
